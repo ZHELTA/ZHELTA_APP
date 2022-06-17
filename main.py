@@ -1,3 +1,4 @@
+import json
 from tkinter import *
 from tkinter import filedialog
 from tkinter.messagebox import showinfo
@@ -14,7 +15,7 @@ class App(object):
 
         def browse_button():
             folder_path = StringVar()
-            filename = filedialog.askopenfilename(
+            filename = filedialog.askopenfile(
                 title="Open a .json file",
                 filetypes = filetypes,
                 initialdir='/'
@@ -23,9 +24,16 @@ class App(object):
             if filename != "":
                 showinfo(
                     title='Selected file',
-                    message=filename
+                    message=filename.name
                 )
                 dragAndDropSection.destroy()
+                textArea = Text(functionalFrame, height=12)
+                textArea.pack()
+                JSONfile = open(filename.name,"r")
+                data = json.loads(JSONfile.read())
+                for i in data:
+                     textArea.insert('1.0',i)
+                JSONfile.close()
 
         # basic application window settings
         self.window = Tk()
@@ -33,7 +41,7 @@ class App(object):
         self.window.minsize(MIN_WINDOW_WIDTH, WINDOW_HEIGHT)
         self.window.title(WINDOW_TITLE)
         self.window.resizable(X_RESIZE_WINDOW, Y_RESIZE_WINDOW)
-        # self.window.iconbitmap()
+        self.window.iconbitmap(ICON)
         style = Style(self.window)
         style.theme_use('clam')
 
@@ -60,7 +68,6 @@ class App(object):
                                     command=browse_button)
         dragAndDropSection.pack(pady=PADY_SEARCH_BUTTON)
         dragAndDropSection.config()
-
         self.window.mainloop()
 
 
