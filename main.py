@@ -11,6 +11,7 @@ from variables import *
 
 from header import Header
 
+
 class App(object):
 
     def __init__(self):
@@ -33,23 +34,40 @@ class App(object):
                     message=filename.name
                 )
                 dragAndDropSection.destroy()
-                insideValuesFrame = Frame(
-                    functionalFrame, bg=FUNCTIONAL_FRAME_BACKGROUND)
-                insideValuesFrame.place(relheight=RELHEIGHT_FUNCTIONAL_FRAME,
-                                        relwidth=1)
+                buttonToExit = Button(functionalFrame,text="Change Layout")
+                buttonToExit.pack(pady=PADY_SEARCH_BUTTON)
+                # insideValuesFrame = Frame(
+                #     functionalFrame, bg=FUNCTIONAL_FRAME_BACKGROUND)
+                # insideValuesFrame.place(relheight=RELHEIGHT_FUNCTIONAL_FRAME,
+                #                         relwidth=1)
                 JSONfile = open(filename.name, 'r')
                 datas = json.loads(JSONfile.read())
                 for i in datas:
-                    nameOfTheKeyboard = Label(insideValuesFrame,
-                                              fg="green",
-                                              text="Name: " + str(i['name']))
-                    nameOfTheKeyboard.pack()
-                    matrixOfTheKeyboard = Label(insideValuesFrame,
-                                                fg="green",
-                                                text="Matrix: " + str(i['layouts']))
-                    matrixOfTheKeyboard.pack()
+                    matrixOfTheKeyboard = i['matrix']
+                    layoutsOfTheKeyboard = i['layouts']
+                    build_keyboard(matrixOfTheKeyboard, layoutsOfTheKeyboard)
                 JSONfile.close()
 
+        def build_keyboard(matrix, layouts):
+            rows = matrix['rows']
+            cols = matrix['cols']
+            for i in range(0, cols):
+                digitalFrame.columnconfigure(i, weight=1)
+            for i in range(0, rows):
+                digitalFrame.rowconfigure(i, weight=1)
+            for i in range(0, rows):
+                for j in range(0, cols):
+                    keyFromKeyboard = Button(digitalFrame,
+                                             text='',
+                                             bg=BACKGROUND_SEARCH_BUTTON,
+                                             activebackground=ACTIVEBACKGROUND_SEARCH_BUTTON,
+                                             activeforeground=FOREGROUND_SEARCH_BUTTON,
+                                             fg=FOREGROUND_SEARCH_BUTTON)  # text='{},{}'.format(i,j),height=5,width=5)
+                    keyFromKeyboard.grid(
+                        column=j, row=i, sticky=NSEW, padx=2, pady=2)
+                    kl.append(keyFromKeyboard)
+
+        kl = []
         # basic application window settings
         self.window = Tk()
         self.window.geometry('{}x{}'.format(WINDOW_WIDTH, WINDOW_HEIGHT))
@@ -60,6 +78,7 @@ class App(object):
         style = Style(self.window)
         style.theme_use('clam')
 
+        # Header Frame
         headerFrame = Header(self.window)
         headerFrame
         # build main sections, upper section is a digital section aka view section for all information, bottom section is our functional section for all interactive activities
