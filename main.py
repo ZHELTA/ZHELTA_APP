@@ -1,118 +1,117 @@
+from ast import Import
+import sys
+from PySide6 import QtCore, QtWidgets, QtGui
 import json
-from msilib.schema import Font
-from multiprocessing.sharedctypes import Value
-from tkinter import *
-from tkinter import filedialog
-from tkinter import font
-from tkinter.messagebox import showinfo
-from tkinter.ttk import Style
-from turtle import width
-from variables import *
-
-from header import Header
 
 
-class App(object):
-
+class MyWidget(QtWidgets.QWidget):
     def __init__(self):
+        super().__init__()
+        self.resize(1680,720)
+        self.setFixedHeight(720)
+        self.setMinimumWidth(800)
+        self.setWindowTitle("ZHELTA APP")
+        self.setWindowIcon(QtGui.QIcon("icons/icon.ico"))
+        self.setStyleSheet("background-color: #17181A")
+        
+        self.createTabs()
+        
+        self.show()
 
-        filetypes = (
-            ('JSON file', '*.json'),
-        )
+    def createTabs(self):
+        layout = QtWidgets.QVBoxLayout()
+        tabs = QtWidgets.QTabWidget()
+        tabs.addTab(self.importTabUI(),"Import")
+        tabs.addTab(self.keyMapTabUI(),"KeyMap")
+        tabs.addTab(self.willBeSoon(),"Macros")
+        tabs.addTab(self.willBeSoon(),"OLED")
+        tabs.addTab(self.willBeSoon(),"Key tester")
+        tabs.addTab(self.willBeSoon(),"Settings")
+        layout.addWidget(tabs)
+        self.setLayout(layout)
+        
 
-        def browse_button():
-            folder_path = StringVar()
-            filename = filedialog.askopenfile(
-                title="Open a .json file",
-                filetypes=filetypes,
-                initialdir='/'
-            )
-            folder_path.set(filename)
-            if filename != "":
-                showinfo(
-                    title='Selected file',
-                    message=filename.name
-                )
-                dragAndDropSection.destroy()
-                buttonToExit = Button(functionalFrame,text="Change Layout")
-                buttonToExit.pack(pady=PADY_SEARCH_BUTTON)
-                # insideValuesFrame = Frame(
-                #     functionalFrame, bg=FUNCTIONAL_FRAME_BACKGROUND)
-                # insideValuesFrame.place(relheight=RELHEIGHT_FUNCTIONAL_FRAME,
-                #                         relwidth=1)
-                JSONfile = open(filename.name, 'r')
-                datas = json.loads(JSONfile.read())
-                for i in datas:
-                    matrixOfTheKeyboard = i['matrix']
-                    layoutsOfTheKeyboard = i['layouts']
-                    build_keyboard(matrixOfTheKeyboard, layoutsOfTheKeyboard)
-                JSONfile.close()
-
-        def build_keyboard(matrix, layouts):
-            rows = matrix['rows']
-            cols = matrix['cols']
-            for i in range(0, cols):
-                digitalFrame.columnconfigure(i, weight=1)
-            for i in range(0, rows):
-                digitalFrame.rowconfigure(i, weight=1)
-            for i in range(0, rows):
-                for j in range(0, cols):
-                    keyFromKeyboard = Button(digitalFrame,
-                                             text='',
-                                             bg=BACKGROUND_SEARCH_BUTTON,
-                                             activebackground=ACTIVEBACKGROUND_SEARCH_BUTTON,
-                                             activeforeground=FOREGROUND_SEARCH_BUTTON,
-                                             fg=FOREGROUND_SEARCH_BUTTON)  # text='{},{}'.format(i,j),height=5,width=5)
-                    keyFromKeyboard.grid(
-                        column=j, row=i, sticky=NSEW, padx=2, pady=2)
-                    kl.append(keyFromKeyboard)
-
-        kl = []
-        # basic application window settings
-        self.window = Tk()
-        self.window.geometry('{}x{}'.format(WINDOW_WIDTH, WINDOW_HEIGHT))
-        self.window.minsize(MIN_WINDOW_WIDTH, WINDOW_HEIGHT)
-        self.window.title(WINDOW_TITLE)
-        self.window.resizable(X_RESIZE_WINDOW, Y_RESIZE_WINDOW)
-        self.window.iconbitmap(ICON)
-        style = Style(self.window)
-        style.theme_use('clam')
-
-        # Header Frame
-        headerFrame = Header(self.window)
-        headerFrame
-        # build main sections, upper section is a digital section aka view section for all information, bottom section is our functional section for all interactive activities
-        digitalFrame = Frame(self.window,
-                             bg=DIGITAL_FRAME_BACKGROUND)
-        digitalFrame.place(relheight=RELHEIGHT_DIGITAL_FRAME,
-                           rely=RELHEIGHT_HEADER_FRAME,
-                           relwidth=1)
-        digitalFrame.config()
-        functionalFrame = Frame(self.window, bg=FUNCTIONAL_FRAME_BACKGROUND)
-        functionalFrame.place(rely=RELY_FUNCTIONAL_FRAME,
-                              relheight=RELHEIGHT_FUNCTIONAL_FRAME,
-                              relwidth=1)
-        functionalFrame.config()
-
-        # Button for searching JSON file with QMK information
-        dragAndDropSection = Button(functionalFrame,
-                                    text=TEXT_SEARCH_BUTTON,
-                                    bg=BACKGROUND_SEARCH_BUTTON,
-                                    activebackground=ACTIVEBACKGROUND_SEARCH_BUTTON,
-                                    activeforeground=FOREGROUND_SEARCH_BUTTON,
-                                    fg=FOREGROUND_SEARCH_BUTTON,
-                                    height=HEIGHT_SEARCH_BUTTON,
-                                    width=WIDTH_SEARCH_BUTTON,
-                                    border=0,
-                                    font=font.Font(size=15),
-                                    command=browse_button)
-        dragAndDropSection.pack(pady=PADY_SEARCH_BUTTON)
-        dragAndDropSection.config()
-        self.window.mainloop()
+    def importTabUI(self):
+        gridFrame = QtWidgets.QFrame(self)
+        gridFrame.setStyleSheet("background-color: #222326;")
+        nestedLayout = QtWidgets.QVBoxLayout()
+        gridImportLayout = QtWidgets.QGridLayout()
 
 
-def main():
-    app = App()
+        functionalImportLayout = QtWidgets.QVBoxLayout()
+        buttonToImportJSONFile = QtWidgets.QPushButton("Import keyboard layout .JSON file")
+        buttonToImportJSONFile.setStyleSheet("background-color: #222326; color: #E39417; max-width: 300px; min-height: 50px;")
+        buttonToImportJSONFile.setCheckable(True)
+        buttonToImportJSONFile.clicked.connect(lambda: self.isButtonToImportClicked(buttonToImportJSONFile, gridImportLayout))
+        functionalImportLayout.addWidget(buttonToImportJSONFile, alignment=QtCore.Qt.AlignCenter)
+        nestedLayout.addLayout(gridImportLayout)
+        nestedLayout.addLayout(functionalImportLayout)
+        gridFrame.setLayout(nestedLayout)
+        return gridFrame
+
+    def isButtonToImportClicked(self,checkButton, layout):
+        getFileJSON = QtWidgets.QFileDialog.getOpenFileName(self,'Open JSON file', '.','*.json')
+        with open(getFileJSON[0],'r') as file:
+            data = file.read()
+        jsonLoadsData = json.loads(data)
+        for i in reversed(range(layout.count())): 
+            layout.itemAt(i).widget().setParent(None)
+        for i in jsonLoadsData:
+            nameOfLayout = i['name']
+            matrixOfLayout = i['matrix']
+            layoutsOfLayout = i['layouts']
+        print(nameOfLayout)
+        checkButton.setText("Change file")
+        checkButton.setChecked(False)
+        for i in range(0,matrixOfLayout['rows']):
+            for j in range(0,matrixOfLayout['cols']):
+                bToKeyboard = QtWidgets.QPushButton("")
+                bToKeyboard.setStyleSheet("height: 100px; border-width: 3px;")
+                layout.addWidget(bToKeyboard,i,j)
+
+    def willBeSoon(self):
+        keyMapTab = QtWidgets.QWidget()
+        keyMapTab.setStyleSheet("background-color: #222326;")
+        keyMapLayout = QtWidgets.QVBoxLayout()
+        labelInformationThatItWillBeAddedSoon = QtWidgets.QLabel()
+        labelInformationThatItWillBeAddedSoon.setText("It will be added soon.")
+        labelInformationThatItWillBeAddedSoon.setStyleSheet("font-size: 34px; color: #E39417; text-align:center;")
+        labelInformationThatItWillBeAddedSoon.setAlignment(QtCore.Qt.AlignCenter)
+        keyMapLayout.addWidget(labelInformationThatItWillBeAddedSoon)
+        keyMapTab.setLayout(keyMapLayout)
+        return keyMapTab
 
 
-main()
+    def keyMapTabUI(self):
+        keyMapFrame = QtWidgets.QFrame(self)
+        keyMapFrame.setStyleSheet("background-color: #222326;")
+        nestedKeyMapLayout = QtWidgets.QVBoxLayout()
+        topKeyboardLayout = QtWidgets.QGridLayout()
+        bottomUseKeysLayout = QtWidgets.QGridLayout()
+
+        with open('allKeysLayout.json','r') as file:
+            data = file.read()
+        layoutNames = json.loads(data)
+
+        positions = [(i, j) for i in range(2) for j in range(20)]
+        
+
+        for position, name in zip(positions, layoutNames):
+         if name == '':
+          continue
+         button = QtWidgets.QPushButton(name)
+         button.setStyleSheet("font-size: 18px; color: #E39417; text-align:center;")
+         topKeyboardLayout.addWidget(button, *position)
+
+        nestedKeyMapLayout.addLayout(topKeyboardLayout)
+        nestedKeyMapLayout.addLayout(bottomUseKeysLayout)
+        keyMapFrame.setLayout(nestedKeyMapLayout)
+        return keyMapFrame
+
+if __name__ == '__main__':
+    app = QtWidgets.QApplication([])
+    widget = MyWidget()
+    with open("mainqt.css","r") as file:
+        app.setStyleSheet(file.read())
+
+    sys.exit(app.exec())
